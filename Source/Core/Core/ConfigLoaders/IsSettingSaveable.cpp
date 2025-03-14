@@ -6,22 +6,19 @@
 #include <algorithm>
 #include <array>
 
-#include "Common/Config/Config.h"
-#include "Core/Config/AchievementSettings.h"
-#include "Core/Config/GraphicsSettings.h"
-#include "Core/Config/MainSettings.h"
-#include "Core/Config/UISettings.h"
+#include "Common/Contains.h"
 #include "Core/Config/WiimoteSettings.h"
+#include <Core/Config/MainSettings.h>
+#include <Core/Config/GraphicsSettings.h>
 
 namespace ConfigLoaders
 {
 bool IsSettingSaveable(const Config::Location& config_location)
 {
-  static constexpr std::array<Config::System, 3> systems_not_saveable = {
-      Config::System::GCPad, Config::System::WiiPad, Config::System::GCKeyboard};
+    static constexpr std::array systems_not_saveable = {Config::System::GCPad, Config::System::WiiPad,
+                                                      Config::System::GCKeyboard};
 
-  if (std::find(begin(systems_not_saveable), end(systems_not_saveable), config_location.system) ==
-      end(systems_not_saveable))
+  if (!Common::Contains(systems_not_saveable, config_location.system))
   {
     return true;
   }
@@ -62,9 +59,8 @@ bool IsSettingSaveable(const Config::Location& config_location)
       &Config::WIIMOTE_BB_SOURCE.GetLocation(),
   };
 
-  return std::any_of(begin(s_setting_saveable), end(s_setting_saveable),
-                     [&config_location](const Config::Location* location) {
-                       return *location == config_location;
-                     });
+    return std::ranges::any_of(s_setting_saveable, [&config_location](const auto* location) {
+    return *location == config_location;
+  });
 }
 }  // namespace ConfigLoaders

@@ -43,6 +43,7 @@
 #include <QUrl>
 
 #include "Common/CommonPaths.h"
+#include "Common/Contains.h"
 #include "Common/FileUtil.h"
 
 #include "Core/Config/MainSettings.h"
@@ -377,15 +378,15 @@ void GameList::ShowContextMenu(const QPoint&)
   {
     const auto selected_games = GetSelectedGames();
 
-    if (std::all_of(selected_games.begin(), selected_games.end(),
-                    [](const auto& game) { return game->ShouldAllowConversion(); }))
+        if (std::ranges::all_of(selected_games,
+                            [](const auto& game) { return game->ShouldAllowConversion(); }))
     {
       menu->addAction(tr("Convert Selected Files..."), this, &GameList::ConvertFile);
       menu->addSeparator();
     }
 
-    if (std::all_of(selected_games.begin(), selected_games.end(),
-                    [](const auto& game) { return DiscIO::IsWii(game->GetPlatform()); }))
+        if (std::ranges::all_of(selected_games,
+                            [](const auto& game) { return DiscIO::IsWii(game->GetPlatform()); }))
     {
       menu->addAction(tr("Export Wii Saves"), this, &GameList::ExportWiiSave);
       menu->addSeparator();
@@ -436,7 +437,7 @@ void GameList::ShowContextMenu(const QPoint&)
                                                     // system menu, trigger a refresh.
                                                     Settings::Instance().NANDRefresh();
                                                   });
-      perform_disc_update->setEnabled(!Core::IsRunning(system) || !system.IsWii());
+      perform_disc_update->setEnabled(Core::IsUninitialized(system) || !system.IsWii());
     }
 
     if (!is_mod_descriptor && platform == DiscIO::Platform::WiiWAD)
@@ -449,10 +450,10 @@ void GameList::ShowContextMenu(const QPoint&)
 
       for (QAction* a : {wad_install_action, wad_uninstall_action})
       {
-        a->setEnabled(!Core::IsRunning(system));
+        a->setEnabled(Core::IsUninitialized(system));
         menu->addAction(a);
       }
-      if (!Core::IsRunning(system))
+      if (Core::IsUninitialized(system))
         wad_uninstall_action->setEnabled(WiiUtils::IsTitleInstalled(game->GetTitleID()));
 
       connect(&Settings::Instance(), &Settings::EmulationStateChanged, menu,
@@ -473,8 +474,8 @@ void GameList::ShowContextMenu(const QPoint&)
       QAction* export_wii_save =
           menu->addAction(tr("Export Wii Save"), this, &GameList::ExportWiiSave);
 
-      open_wii_save_folder->setEnabled(!Core::IsRunning(system));
-      export_wii_save->setEnabled(!Core::IsRunning(system));
+      open_wii_save_folder->setEnabled(Core::IsUninitialized(system));
+      export_wii_save->setEnabled(Core::IsUninitialized(system));
 
       menu->addSeparator();
     }
@@ -531,7 +532,7 @@ void GameList::ShowContextMenu(const QPoint&)
     connect(&Settings::Instance(), &Settings::EmulationStateChanged, menu, [=](Core::State state) {
       netplay_host->setEnabled(state == Core::State::Uninitialized);
     });
-    netplay_host->setEnabled(!Core::IsRunning(system));
+    netplay_host->setEnabled(Core::IsUninitialized(system));
 
     menu->addAction(netplay_host);
   }
@@ -546,13 +547,13 @@ void GameList::OpenProperties()
     return;
 
   PropertiesDialog* properties = new PropertiesDialog(this, *game);
-  // Since the properties dialog locks the game file, it's important to free it as soon as it's
-  // closed so that the file can be moved or deleted.
-  properties->setAttribute(Qt::WA_DeleteOnClose, true);
 
   connect(properties, &PropertiesDialog::OpenGeneralSettings, this, &GameList::OpenGeneralSettings);
   connect(properties, &PropertiesDialog::OpenGraphicsSettings, this,
           &GameList::OpenGraphicsSettings);
+  connect(properties, &PropertiesDialog::finished, this,
+          [properties]() { properties->deleteLater(); });
+
 #ifdef USE_RETRO_ACHIEVEMENTS
   connect(properties, &PropertiesDialog::OpenAchievementSettings, this,
           &GameList::OpenAchievementSettings);
@@ -805,8 +806,7 @@ bool GameList::AddShortcutToDesktop()
   // Sanitize the string by removing all characters that cannot be used in NTFS file names
   std::erase_if(game_name, [](char ch) {
     static constexpr char illegal_characters[] = {'<', '>', ':', '\"', '/', '\\', '|', '?', '*'};
-    return std::find(std::begin(illegal_characters), std::end(illegal_characters), ch) !=
-           std::end(illegal_characters);
+    return Common::Contains(illegal_characters, ch);
   });
 
   std::wstring desktop_path = std::wstring(desktop.get()) + UTF8ToTStr("\\" + game_name + ".lnk");

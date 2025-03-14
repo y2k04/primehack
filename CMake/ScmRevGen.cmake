@@ -31,7 +31,7 @@ if(GIT_FOUND)
 endif()
 
 # version number
-set(DOLPHIN_VERSION_MAJOR "2409")
+set(DOLPHIN_VERSION_MAJOR "2412")
 set(DOLPHIN_VERSION_MINOR "0")
 set(DOLPHIN_VERSION_PATCH ${DOLPHIN_WC_REVISION})
 
@@ -65,6 +65,5 @@ endfunction()
 configure_source_file("Source/Core/Common/scmrev.h")
 
 if(APPLE)
-  configure_source_file("Source/Core/DolphinQt/Info.plist")
-  configure_source_file("Source/Core/MacUpdater/Info.plist")
+  configure_source_file("Source/Core/VersionInfo.plist")
 endif()

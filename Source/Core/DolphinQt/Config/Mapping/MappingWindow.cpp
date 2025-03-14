@@ -10,12 +10,12 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QScreen>
 #include <QTabWidget>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include "Core/Core.h"
 #include "Core/HotkeyManager.h"
 #include "Core/HW/Wiimote.h"
 #include "Core/HW/WiimoteEmu/WiimoteEmu.h"
@@ -41,6 +41,7 @@
 #include "DolphinQt/Config/Mapping/HotkeyGraphics.h"
 #include "DolphinQt/Config/Mapping/HotkeyStates.h"
 #include "DolphinQt/Config/Mapping/HotkeyStatesOther.h"
+#include "DolphinQt/Config/Mapping/MappingCommon.h"
 #include "DolphinQt/Config/Mapping/HotkeyTAS.h"
 #include "DolphinQt/Config/Mapping/HotkeyUSBEmu.h"
 #include "DolphinQt/Config/Mapping/HotkeyWii.h"
@@ -81,12 +82,14 @@ MappingWindow::MappingWindow(QWidget* parent, Type type, int port_num)
   SetMappingType(type);
 
   const auto timer = new QTimer(this);
-  connect(timer, &QTimer::timeout, this, [this] {
+  connect(timer, &QTimer::timeout, this, [this, timer] {
+    const double refresh_rate = screen()->refreshRate();
+    timer->setInterval(1000 / refresh_rate);
     const auto lock = GetController()->GetStateLock();
     emit Update();
   });
 
-  timer->start(1000 / INDICATOR_UPDATE_FREQ);
+  timer->start(100);
 
   const auto lock = GetController()->GetStateLock();
   emit ConfigChanged();
@@ -98,6 +101,8 @@ MappingWindow::MappingWindow(QWidget* parent, Type type, int port_num)
                   [] { HotkeyManagerEmu::Enable(true); });
   filter->connect(filter, &WindowActivationEventFilter::windowActivated,
                   [] { HotkeyManagerEmu::Enable(false); });
+
+  MappingCommon::CreateMappingProcessor(this);
 }
 
 void MappingWindow::CreateDevicesLayout()
@@ -175,6 +180,8 @@ void MappingWindow::CreateMainLayout()
   m_tab_widget = new QTabWidget();
   m_button_box = new QDialogButtonBox(QDialogButtonBox::Close);
 
+  m_tab_widget->setTabBarAutoHide(true);
+
   m_config_layout->addWidget(m_devices_box);
   m_config_layout->addWidget(m_reset_box);
   m_config_layout->addWidget(m_profiles_box);
@@ -188,9 +195,8 @@ void MappingWindow::CreateMainLayout()
 
 void MappingWindow::ConnectWidgets()
 {
-  connect(&Settings::Instance(), &Settings::DevicesChanged, this,
-          &MappingWindow::OnGlobalDevicesChanged);
-  connect(this, &MappingWindow::ConfigChanged, this, &MappingWindow::OnGlobalDevicesChanged);
+    connect(&Settings::Instance(), &Settings::DevicesChanged, this, &MappingWindow::ConfigChanged);
+  connect(this, &MappingWindow::ConfigChanged, this, &MappingWindow::UpdateDeviceList);
   connect(m_devices_combo, &QComboBox::currentIndexChanged, this, &MappingWindow::OnSelectDevice);
 
   connect(m_reset_clear, &QPushButton::clicked, this, &MappingWindow::OnClearFieldsPressed);
@@ -206,6 +212,8 @@ void MappingWindow::ConnectWidgets()
   // We currently use the "Close" button as an "Accept" button so we must save on reject.
   connect(this, &QDialog::rejected, [this] { emit Save(); });
   connect(m_button_box, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+  connect(m_tab_widget, &QTabWidget::currentChanged, this, &MappingWindow::CancelMapping);
 }
 
 void MappingWindow::UpdateProfileIndex()
@@ -351,6 +359,8 @@ void MappingWindow::OnSelectDevice(int)
   const auto device = m_devices_combo->currentData().toString().toStdString();
 
   m_controller->SetDefaultDevice(device);
+
+  emit ConfigChanged();
   m_controller->UpdateReferences(g_controller_interface);
 }
 
@@ -364,7 +374,7 @@ void MappingWindow::RefreshDevices()
   g_controller_interface.RefreshDevices();
 }
 
-void MappingWindow::OnGlobalDevicesChanged()
+void MappingWindow::UpdateDeviceList()
 {
   const QSignalBlocker blocker(m_devices_combo);
 

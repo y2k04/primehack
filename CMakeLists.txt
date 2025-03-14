@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 cmake_policy(SET CMP0079 NEW) # let target_link_libraries() link to a target defined in a different directory
-cmake_policy(SET CMP0080 OLD) # allow using BundleUtilities at configure time
+cmake_policy(SET CMP0080 NEW) # allow using BundleUtilities at configure time
 
 if (POLICY CMP0099)
   cmake_policy(SET CMP0099 NEW) # Propagate INTERFACE_LINK_OPTIONS from private dependencies, used by MacOS framework builds of SDL
@@ -585,7 +585,7 @@ if(UNIX)
 endif()
 
 if(ENABLE_SDL)
-  dolphin_find_optional_system_library(SDL2 Externals/SDL 2.30.6)
+  dolphin_find_optional_system_library(SDL2 Externals/SDL 2.30.9)
 endif()
 
 if(ENABLE_ANALYTICS)
@@ -672,7 +672,7 @@ dolphin_make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
 
 dolphin_find_optional_system_library_pkgconfig(ZSTD libzstd>=1.4.0 zstd::zstd Externals/zstd)
 
-dolphin_find_optional_system_library_pkgconfig(ZLIB zlib-ng ZLIB::ZLIB Externals/zlib-ng)
+add_subdirectory(Externals/zlib-ng)
 
 dolphin_find_optional_system_library_pkgconfig(MINIZIP
   "minizip>=4.0.4" minizip::minizip Externals/minizip-ng
@@ -783,14 +783,9 @@ if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/Common/scmrev.h)
 endif()
 
 if(APPLE)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/DolphinQt)
-  if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/DolphinQt/Info.plist)
-    file(TOUCH ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/DolphinQt/Info.plist)
-  endif()
-
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/MacUpdater)
-  if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/MacUpdater/Info.plist)
-    file(TOUCH ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/MacUpdater/Info.plist)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Source/Core)
+  if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/VersionInfo.plist)
+    file(TOUCH ${CMAKE_CURRENT_BINARY_DIR}/Source/Core/VersionInfo.plist)
   endif()
 endif()
 

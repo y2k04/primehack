@@ -3,14 +3,17 @@
 
 #pragma once
 
+#include "DolphinQt/Config/ConfigControls/ConfigControl.h"
 #include "DolphinQt/Config/ToolTipControls/ToolTipRadioButton.h"
 
-#include "Common/Config/Config.h"
+#include "Common/Config/ConfigInfo.h"
 
-class ConfigRadioInt : public ToolTipRadioButton
+class ConfigRadioInt final : public ConfigControl<ToolTipRadioButton>
 {
   Q_OBJECT
 public:
+  ConfigRadioInt(const QString& label, const Config::Info<int>& setting, int value,
+                 Config::Layer* layer = nullptr);
   ConfigRadioInt(const QString& label, const Config::Info<int>& setting, int value);
 
 signals:
@@ -19,9 +22,12 @@ signals:
   void OnSelected(int new_value);
   void OnDeselected(int old_value);
 
+protected:
+  void OnConfigChanged() override;
+
 private:
   void Update();
 
-  Config::Info<int> m_setting;
+  const Config::Info<int> m_setting;
   int m_value;
 };

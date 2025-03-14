@@ -848,6 +848,7 @@ void NetPlayClient::OnStartGame(sf::Packet& packet)
     packet >> m_net_settings.cpu_thread;
     packet >> m_net_settings.cpu_core;
     packet >> m_net_settings.enable_cheats;
+    packet >> m_net_settings.enable_hardcore;
     packet >> m_net_settings.selected_language;
     packet >> m_net_settings.override_region_settings;
     packet >> m_net_settings.dsp_enable_jit;
@@ -2485,8 +2486,8 @@ bool NetPlayClient::PlayerHasControllerMapped(const PlayerId pid) const
 {
   const auto mapping_matches_player_id = [pid](const PlayerId& mapping) { return mapping == pid; };
 
-  return std::any_of(m_pad_map.begin(), m_pad_map.end(), mapping_matches_player_id) ||
-         std::any_of(m_wiimote_map.begin(), m_wiimote_map.end(), mapping_matches_player_id);
+  return std::ranges::any_of(m_pad_map, mapping_matches_player_id) ||
+         std::ranges::any_of(m_wiimote_map, mapping_matches_player_id);
 }
 
 bool NetPlayClient::IsLocalPlayer(const PlayerId pid) const
@@ -2542,7 +2543,7 @@ bool NetPlayClient::DoAllPlayersHaveGame()
 {
   std::lock_guard lkp(m_crit.players);
 
-  return std::all_of(std::begin(m_players), std::end(m_players), [](auto entry) {
+  return std::ranges::all_of(m_players, [](const auto& entry) {
     return entry.second.game_status == SyncIdentifierComparison::SameGame;
   });
 }

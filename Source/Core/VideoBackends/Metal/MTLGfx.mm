@@ -447,7 +447,7 @@ void Metal::Gfx::DispatchComputeShader(const AbstractShader* shader,  //
   }
 }
 
-void Metal::Gfx::BindBackbuffer(const ClearColor& clear_color)
+bool Metal::Gfx::BindBackbuffer(const ClearColor& clear_color)
 {
   @autoreleasepool
   {

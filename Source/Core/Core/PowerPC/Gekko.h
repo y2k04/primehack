@@ -293,6 +293,14 @@ union UGeckoInstruction
     u32 NB : 5;
   };
 
+  // Precondition: inst is a bx, bcx, bclrx, or bcctrx instruction.
+  constexpr bool BranchIsConditional(UGeckoInstruction inst)
+  {
+    if (inst.OPCD == 18)  // bx
+      return false;
+    return (inst.BO & 0b10100) != 0b10100;  // 1z1zz - Branch always
+  }
+
   // vmcall
   struct
   {

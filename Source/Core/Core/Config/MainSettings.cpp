@@ -212,7 +212,7 @@ const Info<bool> MAIN_RAM_OVERRIDE_ENABLE{{System::Main, "Core", "RAMOverrideEna
 const Info<u32> MAIN_MEM1_SIZE{{System::Main, "Core", "MEM1Size"}, Memory::MEM1_SIZE_RETAIL};
 const Info<u32> MAIN_MEM2_SIZE{{System::Main, "Core", "MEM2Size"}, Memory::MEM2_SIZE_RETAIL};
 const Info<std::string> MAIN_GFX_BACKEND{{System::Main, "Core", "GFXBackend"},
-                                         VideoBackendBase::GetDefaultBackendName()};
+                                         VideoBackendBase::GetDefaultBackendConfigName()};
 const Info<HSP::HSPDeviceType> MAIN_HSP_DEVICE{{System::Main, "Core", "HSPDevice"},
                                                HSP::HSPDeviceType::None};
 const Info<u32> MAIN_ARAM_EXPANSION_SIZE{{System::Main, "Core", "ARAMExpansionSize"}, 0x400000};
@@ -281,6 +281,8 @@ const Info<bool> MAIN_RENDER_WINDOW_AUTOSIZE{{System::Main, "Display", "RenderWi
                                              false};
 const Info<bool> MAIN_KEEP_WINDOW_ON_TOP{{System::Main, "Display", "KeepWindowOnTop"}, false};
 const Info<bool> MAIN_DISABLE_SCREENSAVER{{System::Main, "Display", "DisableScreenSaver"}, true};
+const Info<bool> MAIN_AUDIO_MUTE_ON_DISABLED_SPEED_LIMIT{
+    {System::Main, "DSP", "MuteOnDisabledSpeedLimit"}, false};
 
 // Main.DSP
 
@@ -763,8 +765,7 @@ bool IsDefaultGCIFolderPathConfigured(ExpansionInterface::Slot slot)
 
 bool AreCheatsEnabled()
 {
-  return Config::Get(::Config::MAIN_ENABLE_CHEATS) &&
-         !AchievementManager::GetInstance().IsHardcoreModeActive();
+  return Config::Get(::Config::MAIN_ENABLE_CHEATS);
 }
 
 bool IsDebuggingEnabled()
