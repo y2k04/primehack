@@ -52,6 +52,7 @@ add_executable(dolphin-emu
   Config/CommonControllersWidget.h
   Config/ConfigControls/ConfigBool.cpp
   Config/ConfigControls/ConfigBool.h
+  Config/ConfigControls/ConfigControl.h
   Config/ConfigControls/ConfigChoice.cpp
   Config/ConfigControls/ConfigChoice.h
   Config/ConfigControls/ConfigInteger.cpp
@@ -222,6 +223,8 @@ add_executable(dolphin-emu
   Debugger/AssembleInstructionDialog.h
   Debugger/AssemblerWidget.cpp
   Debugger/AssemblerWidget.h
+  Debugger/JitBlockTableModel.cpp
+  Debugger/JitBlockTableModel.h
   Debugger/AssemblyEditor.cpp
   Debugger/AssemblyEditor.h
   Debugger/BranchWatchDialog.cpp
@@ -313,8 +316,11 @@ add_executable(dolphin-emu
   QtUtils/BlockUserInputFilter.h
   QtUtils/ClearLayoutRecursively.cpp
   QtUtils/ClearLayoutRecursively.h
+  QtUtils/ClickableStatusBar.h
   QtUtils/DolphinFileDialog.cpp
   QtUtils/DolphinFileDialog.h
+  QtUtils/QtUtils.cpp
+  QtUtils/QtUtils.h
   QtUtils/DoubleClickEventFilter.cpp
   QtUtils/DoubleClickEventFilter.h
   QtUtils/ElidedButton.cpp
@@ -583,12 +589,11 @@ endif()
 
 if(APPLE)
   include(BundleUtilities)
-  set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DolphinQt.app)
 
   # Ask for an application bundle.
   set_target_properties(dolphin-emu PROPERTIES
     MACOSX_BUNDLE true
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
     XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
     OUTPUT_NAME DolphinQt
     )
@@ -609,6 +614,9 @@ if(APPLE)
   get_target_property(qtcocoa_location Qt6::QCocoaIntegrationPlugin LOCATION)
   target_sources(dolphin-emu PRIVATE "${qtcocoa_location}")
   set_source_files_properties("${qtcocoa_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/platforms)
+
+  include(DolphinInjectVersionInfo)
+  dolphin_inject_version_info(dolphin-emu)
 
   get_target_property(qtmacstyle_location Qt6::QMacStylePlugin LOCATION)
   target_sources(dolphin-emu PRIVATE "${qtmacstyle_location}")
@@ -659,7 +667,7 @@ if(APPLE)
       COMMAND "${CMAKE_SOURCE_DIR}/Tools/mac-codesign.sh"
       "-e" "${CMAKE_CURRENT_SOURCE_DIR}/DolphinEmu$<$<CONFIG:Debug>:Debug>.entitlements"
       "${MACOS_CODE_SIGNING_IDENTITY}"
-      "${BUNDLE_PATH}"
+      "$<TARGET_BUNDLE_DIR:dolphin-emu>"
     )
   endif()
 else()

@@ -119,7 +119,7 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 4.f * backbuffer_scale));
 
     // Position in the top-right corner of the screen.
-    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(graph_width, graph_height));
     ImGui::SetNextWindowBgAlpha(bg_alpha);
     window_y += graph_height + window_padding;
@@ -161,7 +161,8 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
           DT_ms(std::max(m_fps_counter.GetSampleWindow(), m_vps_counter.GetSampleWindow())).count();
 
       if (ImPlot::BeginPlot("PerformanceGraphs", ImVec2(-1.0, -1.0),
-                            ImPlotFlags_NoFrame | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus))
+                            ImPlotFlags_NoFrame | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus |
+                              ImPlotFlags_NoInputs))
       {
         ImPlot::PushStyleColor(ImPlotCol_PlotBg, {0, 0, 0, 0});
         ImPlot::PushStyleColor(ImPlotCol_LegendBg, {0, 0, 0, 0.2f});
@@ -183,8 +184,8 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
         ImPlot::PopStyleColor(2);
       }
       ImGui::PopStyleVar();
-      ImGui::End();
     }
+    ImGui::End();
   }
 
   if (g_ActiveConfig.bShowSpeed)
@@ -192,7 +193,7 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
     // Position in the top-right corner of the screen.
     float window_height = 47.f * backbuffer_scale;
 
-    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(window_width, window_height));
     ImGui::SetNextWindowBgAlpha(bg_alpha);
 
@@ -205,8 +206,8 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
     {
       ImGui::TextColored(ImVec4(r, g, b, 1.0f), "Speed:%4.0lf%%", 100.0 * speed);
       ImGui::TextColored(ImVec4(r, g, b, 1.0f), "Max:%6.0lf%%", 100.0 * GetMaxSpeed());
-      ImGui::End();
     }
+    ImGui::End();
   }
 
   if (g_ActiveConfig.bShowFPS || g_ActiveConfig.bShowFTimes)
@@ -215,7 +216,7 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
     float window_height = (12.f + 17.f * count) * backbuffer_scale;
 
     // Position in the top-right corner of the screen.
-    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(window_width, window_height));
     ImGui::SetNextWindowBgAlpha(bg_alpha);
 
@@ -235,8 +236,8 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
         ImGui::TextColored(ImVec4(r, g, b, 1.0f), " ±:%6.2lfms",
                            DT_ms(m_fps_counter.GetDtStd()).count());
       }
-      ImGui::End();
     }
+    ImGui::End();
   }
 
   if (g_ActiveConfig.bShowVPS || g_ActiveConfig.bShowVTimes)
@@ -245,7 +246,7 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
     float window_height = (12.f + 17.f * count) * backbuffer_scale;
 
     // Position in the top-right corner of the screen.
-    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+    ImGui::SetNextWindowPos(ImVec2(window_x, window_y), ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.0f));
     ImGui::SetNextWindowSize(ImVec2(window_width, (12.f + 17.f * count) * backbuffer_scale));
     ImGui::SetNextWindowBgAlpha(bg_alpha);
 
@@ -265,8 +266,8 @@ void PerformanceMetrics::DrawImGuiStats(const float backbuffer_scale)
         ImGui::TextColored(ImVec4(r, g, b, 1.0f), " ±:%6.2lfms",
                            DT_ms(m_vps_counter.GetDtStd()).count());
       }
-      ImGui::End();
     }
+    ImGui::End();
   }
 
   ImGui::PopStyleVar(2);

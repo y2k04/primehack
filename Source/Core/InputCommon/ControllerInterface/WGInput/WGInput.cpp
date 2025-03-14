@@ -126,8 +126,8 @@ public:
         for (auto& axis : m_axes)
         {
           // AddAnalogInputs adds additional "FullAnalogSurface" Inputs.
-          AddAnalogInputs(new IndexedAxis(&axis, 0.5, +0.5, i),
-                          new IndexedAxis(&axis, 0.5, -0.5, i));
+          AddFullAnalogSurfaceInputs(new IndexedAxis(&axis, 0.5, +0.5, i),
+                                     new IndexedAxis(&axis, 0.5, -0.5, i));
           ++i;
         }
       }

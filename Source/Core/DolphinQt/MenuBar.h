@@ -43,7 +43,7 @@ public:
 
   explicit MenuBar(QWidget* parent = nullptr);
 
-  void UpdateToolsMenu(bool emulation_started);
+  void UpdateToolsMenu(Core::State state);
 
   QMenu* GetListColumnsMenu() const { return m_cols_menu; }
 
@@ -130,6 +130,7 @@ signals:
   void OpenCVarsMenu();
 private:
   void OnEmulationStateChanged(Core::State state);
+  void OnConfigChanged();
 
   void AddFileMenu();
 
@@ -185,6 +186,7 @@ private:
   void ClearCache();
   void LogInstructions();
   void SearchInstruction();
+  void OnWipeJitBlockProfilingData();
 
   void OnSelectionChanged(std::shared_ptr<const UICommon::GameFile> game_file);
   void OnRecordingStatusChanged(bool recording);
@@ -275,6 +277,7 @@ private:
   QAction* m_jit_log_coverage;
   QAction* m_jit_search_instruction;
   QAction* m_jit_profile_blocks;
+  QAction* m_jit_wipe_profiling_data;
   QAction* m_jit_write_cache_log_dump;
   QAction* m_jit_off;
   QAction* m_jit_loadstore_off;

@@ -372,7 +372,7 @@ void OnScreenUI::DrawChallengesAndLeaderboards()
       for (auto& [name, texture] : m_challenge_texture_map)
       {
         ImGui::Image(texture.get(), ImVec2(static_cast<float>(texture->GetWidth()) * scale,
-                                           static_cast<float>(texture->GetHeight()) * scale));
+                                            static_cast<float>(texture->GetHeight()) * scale));
         ImGui::SameLine();
       }
     }

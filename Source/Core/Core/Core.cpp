@@ -194,7 +194,7 @@ void DisplayMessage(std::string message, int time_in_ms)
     return;
 
   // Actually displaying non-ASCII could cause things to go pear-shaped
-  if (!std::all_of(message.begin(), message.end(), Common::IsPrintableCharacter))
+  if (!std::ranges::all_of(message, Common::IsPrintableCharacter))
     return;
 
   OSD::AddMessage(std::move(message), time_in_ms);
@@ -209,6 +209,11 @@ bool IsRunningOrStarting(Core::System& system)
 {
   const State state = s_state.load();
   return state == State::Running || state == State::Starting;
+}
+
+bool IsUninitialized(Core::System& system)
+{
+  return s_state.load() == State::Uninitialized;
 }
 
 bool IsCPUThread()
@@ -237,7 +242,7 @@ bool Init(Core::System& system, std::unique_ptr<BootParameters> boot, const Wind
 {
   if (s_emu_thread.joinable())
   {
-    if (IsRunning(system))
+    if (!IsUninitialized(system))
     {
       PanicAlertFmtT("Emu Thread already running");
       return false;
@@ -572,8 +577,6 @@ static void EmuThread(Core::System& system, std::unique_ptr<BootParameters> boot
     CPUThreadGuard guard(system);
     system.GetPowerPC().GetDebugInterface().Clear(guard);
   }};
-
-  VideoBackendBase::PopulateBackendInfo(wsi);
 
   if (!g_video_backend->Initialize(wsi))
   {

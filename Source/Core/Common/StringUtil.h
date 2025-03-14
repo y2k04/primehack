@@ -276,6 +276,21 @@ inline bool IsAlpha(char c)
   return std::isalpha(c, std::locale::classic());
 }
 
+inline bool IsAlnum(char c)
+{
+  return std::isalnum(c, std::locale::classic());
+}
+
+inline bool IsUpper(char c)
+{
+  return std::isupper(c, std::locale::classic());
+}
+
+inline bool IsXDigit(char c)
+{
+  return std::isxdigit(c /* no locale needed */) != 0;
+}
+
 inline char ToLower(char ch)
 {
   return std::tolower(ch, std::locale::classic());
@@ -314,5 +329,13 @@ std::string GetEscapedHtml(std::string html);
 void ToLower(std::string* str);
 void ToUpper(std::string* str);
 bool CaseInsensitiveEquals(std::string_view a, std::string_view b);
+
+// 'std::less'-like comparison function object type for case-insensitive strings.
+struct CaseInsensitiveLess
+{
+  using is_transparent = void;  // Allow heterogenous lookup.
+  bool operator()(std::string_view a, std::string_view b) const;
+};
+
 std::string BytesToHexString(std::span<const u8> bytes);
 }  // namespace Common

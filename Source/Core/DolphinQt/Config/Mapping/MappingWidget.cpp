@@ -21,7 +21,6 @@
 #include "DolphinQt/Config/Mapping/MappingWindow.h"
 #include "DolphinQt/QtUtils/SetWindowDecorations.h"
 
-#include "InputCommon/ControlReference/ControlReference.h"
 #include "InputCommon/ControllerEmu/Control/Control.h"
 #include "InputCommon/ControllerEmu/ControlGroup/ControlGroup.h"
 #include "InputCommon/ControllerEmu/ControlGroup/MixedTriggers.h"
@@ -269,6 +268,7 @@ void MappingWidget::AddSettingWidgets(QFormLayout* layout, ControllerEmu::Contro
     if (setting_widget)
     {
       const auto hbox = new QHBoxLayout;
+      setting_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
       hbox->addWidget(setting_widget);
       hbox->addWidget(CreateSettingAdvancedMappingButton(*setting));
@@ -381,9 +381,10 @@ MappingWidget::CreateSettingAdvancedMappingButton(ControllerEmu::NumericSettingB
       setting.SetExpressionFromValue();
 
     // Ensure the UI has the game-controller indicator while editing the expression.
+    // And cancel in-progress mappings.
     ConfigChanged();
 
-    IOWindow io(this, GetController(), &setting.GetInputReference(), IOWindow::Type::Input);
+    IOWindow io(GetParent(), GetController(), &setting.GetInputReference(), IOWindow::Type::Input);
     SetQWidgetWindowDecorations(&io);
     io.exec();
 
